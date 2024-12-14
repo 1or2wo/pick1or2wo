@@ -1,0 +1,66 @@
+
+
+const express = require('express');
+const crypto = require('crypto');
+const app = express();
+app.use(express.json());
+
+let users = {}; // Mock database for users
+
+// Function to pick a random number (1 or 2)
+function pickRandomNumber() {
+  return Math.floor(Math.random() * 2) + 1;
+}
+
+// Route to place a bet
+app.post('/bet', (req, res) => {
+  const { userId, betChoice, betAmount } = req.body;
+  const user = users[userId];
+
+  // Validate user and bet details
+  if (!user) {
+    return res.status(400).send('User not found');
+  }
+  if (betChoice !== 1 && betChoice !== 2) {
+    return res.status(400).send('Invalid bet choice');
+  }
+  if (user.balance < betAmount) {
+    return res.status(400).send('Insufficient funds');
+  }
+
+  // Deduct the bet amount from user's balance
+  user.balance -= betAmount;
+
+  // The dealer automatically picks the other number
+  const dealerChoice = betChoice === 1 ? 2 : 1;
+
+  // The RNG picks the winning number (1 or 2)
+  const winningNumber = pickRandomNumber();
+
+  // Determine if the player wins or loses
+  let result = 'You lose!';
+  if (betChoice === winningNumber) {
+    user.balance += betAmount * 2; // Player wins and gets double their bet
+    result = 'You win!';
+  }
+
+  // Send the result back to the user
+  res.send({
+    result,
+    playerChoice: betChoice,
+    dealerChoice,
+    winningNumber,
+    newBalance: user.balance
+  });
+});
+
+// Mock user creation
+app.post('/register', (req, res) => {
+  const { userId, initialDeposit } = req.body;
+  users[userId] = { balance: initialDeposit };
+  res.send(`User ${userId} registered with balance: $${initialDeposit}`);
+});
+
+app.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
+});
