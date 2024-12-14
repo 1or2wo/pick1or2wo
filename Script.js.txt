@@ -1,0 +1,10 @@
+
+
+
+document.getElementById('pick1').onclick = function() {
+  document.getElementById('result').innerHTML = 'You picked 1!';
+};
+
+document.getElementById('pick2').onclick = function() {
+  document.getElementById('result').innerHTML = 'You picked 2!';
+};
